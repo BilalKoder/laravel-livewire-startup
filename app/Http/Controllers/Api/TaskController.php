@@ -43,9 +43,6 @@ class TaskController extends BaseController
                     $result[$i]['totalPercent']= round(($prevProgressCount/ $result[$i]['goal'])*100); 
 
             }
-
-          
-
         }
 
         return $this->sendResponse($result, 'All Tasks Listing');
@@ -60,7 +57,6 @@ class TaskController extends BaseController
             'description' => 'required',
             'goal' => 'required',
             'type' => 'required|in:WEEKLY,MONTHLY,YEARLY', 
-            'user_id' => 'required',
             'category_id' => 'required',
       
         ]);
@@ -78,7 +74,7 @@ class TaskController extends BaseController
             $task->description = $request->description;
             $task->goal = $request->goal;
             $task->type = $request->type;
-            $task->user_id = $request->user_id;
+            $task->user_id = auth()->user()->id;
             $task->category_id = $request->category_id;
             $task->save();
 
@@ -135,7 +131,6 @@ class TaskController extends BaseController
         $task->description = $request->description ? $request->description : $task->description;
         $task->goal = $request->goal ? $request->goal : $task->goal;
         $task->type = $request->type ? $request->type : $task->type;
-        $task->user_id = $request->user_id ? $request->user_id : $task->user_id;
         $task->category_id = $request->category_id ? $request->category_id : $task->category_id;
 
         $task->save();
@@ -155,7 +150,6 @@ class TaskController extends BaseController
         $validator = Validator::make($request->all(), [
             'progress_value' => 'required',
             'progress_date' => 'required',
-            'user_id' => 'required',
         ]);
    
         if($validator->fails()){
@@ -182,7 +176,7 @@ class TaskController extends BaseController
             $progress->progress_value = $request->progress_value;
             $progress->progress_date = $request->progress_date;
             $progress->task_id = $id;
-            $progress->user_id = $request->user_id;
+            $progress->user_id = auth()->user()->id;
             $progress->save();
 
             DB::commit();

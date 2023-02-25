@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\BaseController as BaseController;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\UserPushIds;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\TaskResource;
@@ -13,7 +14,7 @@ use Exception;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 
-class UserApiController extends Controller
+class UserApiController extends BaseController
 {
     public function show($id)
     {
@@ -64,44 +65,50 @@ class UserApiController extends Controller
 
     public function login(Request $request)
     {
-        $rules = [
+
+        $validator = Validator::make($request->all(), [
             'email' => 'required',
             'password' => 'required',
-        ];
+            'device_token' => 'nullable',
+            'device_type' => 'nullable'
+        ]);
 
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        if($validator->fails()){
+            return $this->sendError('Validation Error.', $validator->errors(),422);       
         }
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['errors' => 'The provided credentials are incorrect.'], 404);
+        if (!$user) {
+            return response()->json(['errors' => 'Email does not exists!'], 422);
+        }
+
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json(['errors' => 'Invalid Password'], 422);
         }
 
         $token = $user->createToken('app-token')->plainTextToken;
-
         $user->token = $token;
-        $response = [
-          'status' => true,
-          'message' =>  'User logged in successully',
-          'data' => new UserResource($user)
-        ];
 
-        return response($response, 201);
+        if($request->device_token) 
+            {
+                $push = new UserPushIds();
+                $push->push_id = $request->device_token ? $request->device_token : '';
+                $push->device_type = $request->device_type ? $request->device_type : '';
+                $push->user_id = auth()->check() ? auth()->user()->id : '';
+                $push->save();
+            }
+
+        return $this->sendResponse($user,'User logged in successully');
     }
-
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
         $response = [
           'status' => true,
           'message' =>  'User logged out successully',
-          /*'data' => 'Logout successful.'*/
         ];
-        return response()->json($response, 201);
+        return response()->json($response, 200);
     }
 
     /*

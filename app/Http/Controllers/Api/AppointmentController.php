@@ -40,7 +40,6 @@ class AppointmentController extends BaseController
             'topic' => 'required',
             'preferred_date' => 'required',
             'preferred_time' => 'required',
-            'user_id' => 'required',
             'message' => 'required',
       
         ]);
@@ -58,7 +57,7 @@ class AppointmentController extends BaseController
             $appointment->preferred_date = $request->preferred_date;
             $appointment->preferred_time = $request->preferred_time;
             $appointment->message = $request->message;
-            $appointment->user_id = $request->user_id;
+            $appointment->user_id = auth()->user()->id;
             $appointment->save();
 
             DB::commit();
@@ -92,7 +91,6 @@ class AppointmentController extends BaseController
             'preferred_date' => 'required',
             'preferred_time' => 'required',
             'status' => 'required|in:PENDING,APPROVED,COMPLETED',
-            'user_id' => 'required',
             'message' => 'required',
       
         ]);
@@ -111,7 +109,6 @@ class AppointmentController extends BaseController
         $appointment->preferred_date = $request->preferred_date ? $request->preferred_date : $appointment->preferred_date;
         $appointment->preferred_time = $request->preferred_time ? $request->preferred_time : $appointment->preferred_time;
         $appointment->status = $request->status ? $request->status : $appointment->status;
-        $appointment->user_id = $request->user_id ? $request->user_id : $appointment->user_id;
         $appointment->message = $request->message ? $request->message : $appointment->message;
 
         $appointment->save();

@@ -39,61 +39,67 @@ Route::get('tasks/{id}', [TaskApiController::class, 'show']);
 Route::get('tasks/{id}/progress_lists', [TaskApiController::class, 'progress_lists']);
 
  
-/** Task & Progress Routes Start*/
 
-//this route will GET all tasks or filtered with query param
+Route::middleware('auth:sanctum')->group(function () {
 
-Route::get('all/tasks', [TaskController::class, 'index']);
+        /** Task & Progress Routes Start*/
 
-//this route will CREATE a new task
+        //this route will GET all tasks or filtered with query param
 
-Route::post('task', [TaskController::class, 'store']);
+        Route::get('all/tasks', [TaskController::class, 'index']);
 
-//this route will GET a task by ID
+        //this route will CREATE a new task
 
-Route::get('task/{id}', [TaskController::class, 'show']);
+        Route::post('task', [TaskController::class, 'store']);
 
-//this route will DELETE a task by ID
+        //this route will GET a task by ID
 
-Route::get('task/{id}/destory', [TaskController::class, 'delete']);
+        Route::get('task/{id}', [TaskController::class, 'show']);
 
-//this route will UPDATE a task by ID
+        //this route will DELETE a task by ID
 
-Route::post('task/{id}/update', [TaskController::class, 'update']);
+        Route::get('task/{id}/destory', [TaskController::class, 'delete']);
 
-//this route will CREATE a new task PROGRESS
+        //this route will UPDATE a task by ID
 
-Route::post('task/{id}/progress', [TaskController::class, 'storeProgress']);
+        Route::post('task/{id}/update', [TaskController::class, 'update']);
+
+        //this route will CREATE a new task PROGRESS
+
+        Route::post('task/{id}/progress', [TaskController::class, 'storeProgress']);
 
 
-//this route will GET all Appointments with filter
+        //this route will GET all Appointments with filter
 
-Route::get('appointments', [AppointmentController::class, 'index']);
+        Route::get('appointments', [AppointmentController::class, 'index']);
 
-//this route will send request to coach
+        //this route will send request to coach
 
-Route::post('appointment', [AppointmentController::class, 'store']);
+        Route::post('appointment', [AppointmentController::class, 'store']);
 
-//this route will GET appointment by ID
+        //this route will GET appointment by ID
 
-Route::get('appointment/{id}', [AppointmentController::class, 'show']);
+        Route::get('appointment/{id}', [AppointmentController::class, 'show']);
 
-//this route will DELETE a appointment by ID
+        //this route will DELETE a appointment by ID
 
-Route::get('appointment/{id}/destory', [AppointmentController::class, 'delete']);
+        Route::get('appointment/{id}/destory', [AppointmentController::class, 'delete']);
 
-//this route will UPDATE a appointment by ID
+        //this route will UPDATE a appointment by ID
 
-Route::post('appointment/{id}/update', [AppointmentController::class, 'update']);
+        Route::post('appointment/{id}/update', [AppointmentController::class, 'update']);
 
-//this route will get progress analytics
+        //this route will get progress analytics
 
-Route::get('analytics', [TaskController::class, 'analytics']);
+        Route::get('analytics', [TaskController::class, 'analytics']);
 
-/**Task & Progress Routes End */
+        /**Task & Progress Routes End */
 
-//Route::middleware('auth:sanctum')->group(function () {
     Route::post('progress_lists/tasks', [Progress_listApiController::class, 'store']);
+
+    /**Logout Route  */
+
     Route::post('logout', [UserApiController::class, 'logout']);
+    
     Route::post('update-password',[UserApiController::class, 'updatePassword']);
-//});
+});
