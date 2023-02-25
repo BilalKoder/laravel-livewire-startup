@@ -239,8 +239,8 @@ class TaskController extends BaseController
        if($request->user_id){
            $tasks->where('user_id',$request->user_id);
         }
-        
         $totalSumOfGoals = $tasks->sum('goal');
+     
         
         if($totalSumOfGoals == 0){
             return $this->sendResponse($data,"User Analytics",);
@@ -249,6 +249,7 @@ class TaskController extends BaseController
 
        $data = round(($totalProgressCount/ $totalSumOfGoals)*100); 
 
+     
         return $this->sendResponse($data,"User Analytics",);
     }
 
