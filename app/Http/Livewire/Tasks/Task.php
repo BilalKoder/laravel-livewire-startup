@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Tasks;
 
 use App\Models\Task as TaskModel;
+use App\Models\UserTask;
 use Livewire\Component;
 
 class Task extends Component
@@ -12,7 +13,7 @@ class Task extends Component
 
     public function mount($id)
     {
-        $this->task = TaskModel::with(['user', 'progress_lists', 'category', 'images', 'videos'])->find($id);
+        $this->task = UserTask::with(['user', 'progress', 'category'])->find($id);
     }
 
     public function render()

@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Tasks;
 use App\Models\Category;
 use App\Models\Image;
 use App\Models\Task;
+use App\Models\UserTask;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -17,14 +18,14 @@ class Tasks extends Component
     use WithPagination;
     use WithFileUploads;
 
-    public $title, $content, $category, $task_id;
+    public $title, $description, $category_id, $task_id , $image,$goal;
     public $photos = [];
     public $isOpen = 0;
 
     public function render()
     {
         return view('livewire.tasks.tasks', [
-            'tasks' => Task::orderBy('id', 'desc')->paginate(),
+            'tasks' => UserTask::orderBy('id', 'desc')->paginate(),
             'categories' => Category::all(),
         ]);
     }
@@ -33,40 +34,56 @@ class Tasks extends Component
     {
         $this->validate([
             'title' => 'required',
-            'content' => 'required',
-            'category' => 'required',
-            'photos.*' => 'image|max:1024',
+            'description' => 'required',
+            'category_id' => 'required',
+            'image' => 'image|max:1024',
         ]);
+
+        // if($this->image){
+        //     $image = $this->image;
+            //store Image to directory
+            // $imgName = rand() . '_' . time() . '.' . $image->getClientOriginalExtension();
+            // $destinationPath = public_path('task_icons');
+            // $imagePath = $destinationPath . "/" . $imgName;
+            // $image->move($destinationPath, $imgName);
+            // $path = "task_icons" . "/" .basename($imagePath);
+           
+        // }
+        $storedImage = $this->image->store('public/task_icons');
 
         // Update or Insert Task
-        $task = Task::updateOrCreate(['id' => $this->task_id], [
+        $task = UserTask::updateOrCreate(['id' => $this->task_id], [
             'title' => $this->title,
-            'content' => $this->content,
-            'category_id' => intVal($this->category),
+            'goal' => $this->goal,
+            'description' => $this->description,
+            'category_id' => intVal($this->category_id),
             'user_id' => Auth::user()->id,
+            'image' => url('storage'. Str::substr($storedImage, 6)),
         ]);
 
+
+
         // Image upload and store name in db
-        if (count($this->photos) > 0) {
-            Image::where('task_id', $task->id)->delete();
-            $counter = 0;
-            foreach ($this->photos as $photo) {
+        // if (count($this->photos) > 0) {
+        //     Image::where('task_id', $task->id)->delete();
+        //     $counter = 0;
+            // foreach ($this->photos as $photo) {
 
-                $storedImage = $photo->store('public/photos');
+            //     $storedImage = $photo->store('public/photos');
 
-                $featured = false;
-                if($counter == 0 ){
-                    $featured = true;
-                }
-                Image::create([
-                    'url' => url('storage'. Str::substr($storedImage, 6)),
-                    'title' => '-',
-                    'task_id' => $task->id,
-                    'featured' => $featured
-                ]);
-                $counter++;
-            }
-        }
+            //     $featured = false;
+            //     if($counter == 0 ){
+            //         $featured = true;
+            //     }
+                // Image::create([
+                //     'url' => url('storage'. Str::substr($storedImage, 6)),
+                //     'title' => '-',
+                //     'task_id' => $task->id,
+                //     'featured' => $featured
+                // ]);
+                // $counter++;
+        //     }
+        // }
 
         session()->flash(
             'message',
@@ -79,18 +96,18 @@ class Tasks extends Component
 
     public function delete($id)
     {
-        Task::find($id)->delete();
+        UserTask::find($id)->delete();
 
         session()->flash('message', 'Task Deleted Successfully.');
     }
 
     public function edit($id)
     {
-        $task = Task::findOrFail($id);
+        $task = UserTask::findOrFail($id);
 
         $this->task_id = $id;
         $this->title = $task->title;
-        $this->content = $task->content;
+        $this->description = $task->description;
         $this->category = $task->category_id;
 
         $this->openModal();
@@ -115,7 +132,7 @@ class Tasks extends Component
     private function resetInputFields()
     {
         $this->title = null;
-        $this->content = null;
+        $this->description = null;
         $this->category = null;
         $this->photos = null;
         $this->task_id = null;

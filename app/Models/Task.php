@@ -14,6 +14,7 @@ class Task extends Model
         'title',
         'content',
         'task_type',
+        'goal',
         'meta_data',
         'category_id',
         'user_id',

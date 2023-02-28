@@ -23,8 +23,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('registration', [UserApiController::class, 'store']);
 Route::post('login', [UserApiController::class, 'login']);
-Route::post('forgot-password', [UserApiController::class, 'forgotPassword']);
+Route::post('forgot-password', [UserApiController::class, 'forgetPassword']);
+Route::post('verify-otp', [UserApiController::class, 'verifyOtp']);
+Route::post('reset-password', [UserApiController::class, 'resetPassword']);
 Route::get('show/{id}', [UserApiController::class, 'show']);
+
 
 Route::get('user/{id}', [UserApiController::class, 'show']);
 Route::get('user/{id}/update', [UserApiController::class, 'update']);
@@ -37,8 +40,8 @@ Route::get('categories/{id}/tasks', [CategoryApiController::class, 'tasks']);
 Route::get('tasks', [TaskApiController::class, 'index']);
 Route::get('tasks/{id}', [TaskApiController::class, 'show']);
 Route::get('tasks/{id}/progress_lists', [TaskApiController::class, 'progress_lists']);
+Route::get('delete/tasks', [TaskController::class, 'deleteAllTask']);
 
- 
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -94,6 +97,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('analytics', [TaskController::class, 'analytics']);
 
         /**Task & Progress Routes End */
+
+          /**Categories Routes  */
+
+        Route::get('all/categories', [CategoryApiController::class, 'getAllCategories']);
+
+        Route::post('categories', [CategoryApiController::class, 'store']);
+
+         /**Categories Routes  */
 
     Route::post('progress_lists/tasks', [Progress_listApiController::class, 'store']);
 

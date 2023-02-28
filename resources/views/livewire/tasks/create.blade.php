@@ -21,22 +21,29 @@
                             @error('title') <span class="text-red-500">{{ $message }}</span>@enderror
                         </div>
                         <div class="mb-4">
-                            <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Content:</label>
+                            <label for="goal" class="block text-gray-700 text-sm font-bold mb-2">Goal:</label>
+                            <input type="number"
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                id="goal" placeholder="Enter Goal" wire:model="goal">
+                            @error('goal') <span class="text-red-500">{{ $message }}</span>@enderror
+                        </div>
+                        <div class="mb-4">
+                            <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Content:</label>
                             <textarea rows="10"
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                id="content" wire:model="content" placeholder="Enter Content"></textarea>
-                            @error('content') <span class="text-red-500">{{ $message }}</span>@enderror
+                                id="description" wire:model="description" placeholder="Enter Description"></textarea>
+                            @error('description') <span class="text-red-500">{{ $message }}</span>@enderror
                         </div>
                         <div class="mb-4">
                             <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Category:</label>
-                            <select name="category" id="category" wire:model="category"
+                            <select name="category_id" id="category_id" wire:model="category_id"
                                 class="shadow appearance-none w-full border text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline">
                                 <option value="" selected>Select Category</option>
                                 @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->title }}</option>
+                                    <option value="{{ $category->id }}">{{ $category->title??'' }}</option>
                                 @endforeach
                             </select>
-                            @error('category') <span class="text-red-500">{{ $message }}</span>@enderror
+                            @error('category_id') <span class="text-red-500">{{ $message }}</span>@enderror
                         </div>
 
                         <div class="mb-4">
@@ -47,17 +54,17 @@
                                 x-on:livewire-upload-progress="progress = $event.detail.progress">
                                 <div class="flex">
                                     <label for="photos"
-                                        class="block text-gray-700 text-sm font-bold mb-2">Images:</label>
+                                        class="block text-gray-700 text-sm font-bold mb-2">Image:</label>
                                     {{-- <div class="px-2" wire:loading
                                         wire:target="photos">Uploading</div> --}}
                                     <div x-show="isUploading" class="px-2">
                                         <progress max="100" x-bind:value="progress"></progress>
                                     </div>
                                 </div>
-                                <input type="file" multiple name="photos" id="photos"
+                                <input type="file"  name="image" id="image"
                                     class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                    wire:model="photos">
-                                @error('photos') <span class="text-red-500">{{ $message }}</span>@enderror
+                                    wire:model="image">
+                                @error('image') <span class="text-red-500">{{ $message }}</span>@enderror
                             </div>
                         </div>
                     </div>

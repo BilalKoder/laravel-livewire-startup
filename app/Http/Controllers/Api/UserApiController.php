@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\API\BaseController as BaseController;
+use App\Models\PasswordReset;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserPushIds;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\TaskResource;
+use App\Traits\EmailTrait;
 use App\Http\Resources\Progress_listResource;
 use Exception;
 use Illuminate\Support\Facades\Password;
@@ -16,6 +18,8 @@ use Illuminate\Support\Facades\Validator;
 
 class UserApiController extends BaseController
 {
+
+    use EmailTrait;
     public function show($id)
     {
         $response = [
@@ -80,11 +84,11 @@ class UserApiController extends BaseController
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return response()->json(['errors' => 'Email does not exists!'], 422);
+            return $this->sendError('Login Failed, Invalid Email Or Password!',null, 422);
         }
 
         if (!Hash::check($request->password, $user->password)) {
-            return response()->json(['errors' => 'Invalid Password'], 422);
+            return $this->sendError('Login Failed, Invalid Email Or Password!',null, 422);
         }
 
         $token = $user->createToken('app-token')->plainTextToken;
@@ -140,6 +144,74 @@ class UserApiController extends BaseController
         }
     }
 
+    public function forgetPassword(Request $request)
+    {
+
+        $rules = ['email' => "required",];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) return $this->sendError([$validator->errors(), 'errors'],422);
+
+        $user = User::where('email',$request->email)->first(); 
+
+        if (!$user) {
+            return $this->sendError('User does not exists!',null, 422);
+        }
+
+        $isCheck = PasswordReset::where('email',$request->email)->first(); 
+        $otp = rand(1000,9999);
+
+        if($isCheck){
+            $isCheck->email = $request->email;
+            $isCheck->token = $otp;
+            $isCheck->save();
+        }else{
+            $passChange = new PasswordReset;
+            $passChange->email = $request->email;
+            $passChange->token = $otp;
+            $passChange->save();
+        }
+
+        $this->sendMail(['email' => $request->email, 'password' => $request->password, 'subject' => "Forgot Password", 'token' => $otp], 'emails.forget-password');
+       
+        return $this->sendResponse(true,'OTP sent to Email successully');
+
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $rules = ['email' => "required|email",'otp' => "required",];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) return $this->sendError([$validator->errors(), 'errors'],422);
+
+        $isCheck = PasswordReset::where('email',$request->email)->where('token',$request->otp)->first(); 
+
+        if (!$isCheck) {
+            return $this->sendError("Invalid OTP",null,400);
+        }
+
+        return $this->sendResponse("OTP Verified Successfully!",null);
+        
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $rules = ['email' => "required|email" , "password"=> "required"];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) return $this->sendError([$validator->errors(), 'errors'],422);
+       
+        $user = User::where('email',$request->email)->first(); 
+
+        if (!$user) {
+            return $this->sendError('User does not exists!',null, 422);
+        }
+
+        $user->password = Hash::make($request->get('password'));
+        $user->save();
+
+        return $this->sendResponse(null,"Password Reset Successfully!");
+
+    }
+
     public function updatePassword(Request $request)
     {
         $rules = [
@@ -151,18 +223,18 @@ class UserApiController extends BaseController
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return $this->sendError($validator->errors(),null, 422);
         }
 
         if (!Hash::check($request->get('current_password'), $request->user()->password)) {
-            return response()->json(['errors' => 'The provided password does not match your current password.'], 404);
+            return $this->sendError("The provided password does not match your current password.",null, 422);
         }
 
         $request->user()->forceFill([
             'password' => Hash::make($request->get('password')),
         ])->save();
 
-        return response(['data' => 'Password set successfully.'], 201);
+        return $this->sendResponse(null,"Password Reset successfully.");
     }
 
     public function update(Request $request,$id){
